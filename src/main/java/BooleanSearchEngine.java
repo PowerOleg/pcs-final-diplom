@@ -8,9 +8,11 @@ import java.io.IOException;
 import java.util.*;
 
 public class BooleanSearchEngine implements SearchEngine {
-    private List<Map<String, Integer>> wordListPerPage = new ArrayList<>(); //можно сделать var
+    private List<Map<String, PageEntry>> listOfMaps = new ArrayList<>(); //можно сделать var
+    private Map<String, PageEntry> pageEntryMap; //можно сделать var
+    private PageEntry pageEntry1;
 
-    private Map<String, List<PageEntry>> resultList = new HashMap<>();             //можно сделать var
+    private Map<String, List<PageEntry>> searchList = new HashMap<>();             //можно сделать var
 
     //    Сканируя каждый пдф-файл вы перебираете его страницы, для каждой страницы извлекаете из неё слова и
 //    подсчитываете их количество. После подсчёта, для каждого уникального слова пдф-файла создаёте объект PageEntry
@@ -79,15 +81,31 @@ public class BooleanSearchEngine implements SearchEngine {
 //        pageList.add(pageEntryList1);
 //    }
 
+//этот метод должен быть для одного слова
+    public Map<String, List<PageEntry>> convert(List<Map<String, PageEntry>> list) {
+        Set<String> words = new TreeSet<>();
+        for (Map<String, PageEntry> map : list) {
+            words.addAll(map.keySet());
+        }
 
-    public void addResultList(List<Map<String, Integer>> wordListPerPage) {
-        String word = "";
-//тут будет упорядочивание из листалистов слов-количеств для страниц в resultList
 
-        List<PageEntry> pageEntryList2 = new ArrayList<>();
+//        List<PageEntry> list1 = new ArrayList<>();
+        Map<String, List<PageEntry>> resultList = new HashMap<>();
+
+//        for (String word : words) {
+//            for (String s : map.keySet()) {
+//                s.equalsIgnoreCase(word) {
+//
+//                }
+//            }
+////            list1 = map.values().stream().filter()
+//
+//            resultList.put(word, list1);
+//        }
 
 
-        resultList.put(word, pageEntryList2);
+
+        return resultList;
     }
 
 
@@ -117,7 +135,7 @@ for (File pdf : pdfsDir.listFiles()) {
     var doc = new PdfDocument(new PdfReader(pdf));
     int length = doc.getNumberOfPages();
 
-    for (int i = 0; i < length; i++) {
+    for (int i = 1; i <= length; i++) {
         PdfPage page = doc.getPage(i);
         var text = PdfTextExtractor.getTextFromPage(page);
         var words = text.split("\\P{IsAlphabetic}+");
@@ -129,24 +147,31 @@ for (File pdf : pdfsDir.listFiles()) {
             }
             word = word.toLowerCase();
             freqs.put(word, freqs.getOrDefault(word, 0) + 1);
-            System.out.println("2 freqs " + freqs.size());
         }
+        System.out.println("2 freqs " + freqs.size());
 
         //тут метод чтобы для одной страницы положить запись
-        wordListPerPage.add(freqs);
+        //может сделаем переработку тут?
+
+        pageEntryMap = new HashMap<>();
+        for (String word : freqs.keySet()) {
+            pageEntry1 = new PageEntry(pdf.getName(), i, freqs.get(word));
+            pageEntryMap.put(word, pageEntry1);
+        }
+listOfMaps.add(pageEntryMap);
+//конец страницы
     }
-    System.out.println("3 wordListPerPage " + wordListPerPage.size());
-
-
-
-
+    //новый pdf файл
+//    System.out.println("3 wordListPerPage " + wordListPerPage.size());
 
         }
-    addResultList(wordListPerPage);
+
+        //конечное действие - преобразование ... в searchList
+      searchList = convert(listOfMaps);
     }
 
     @Override
     public List<PageEntry> search(String word) {
-        return resultList.computeIfAbsent(word, n -> null);
+        return searchList.computeIfAbsent(word, n -> null);
     }
 }
