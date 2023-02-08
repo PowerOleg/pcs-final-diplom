@@ -21,17 +21,27 @@ import java.net.Socket;
 //    }
 //]
 public class SearchServer implements Runnable {
+    private BooleanSearchEngine booleanSearchEngine;
+    private ServerLogic serverLogic;
+
+    public SearchServer(BooleanSearchEngine booleanSearchEngine, ServerLogic serverLogic) {
+        this.booleanSearchEngine = booleanSearchEngine;
+        this.serverLogic = serverLogic;
+    }
+
     public static final int PORT = 8989;
     @Override
     public void run() {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             System.out.println("Сервер запущен");
             try (Socket socket = serverSocket.accept();
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()))) {
-
-
-
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()))) {
+                String clientRequest = in.readLine();
+                String response = serverLogic.makeResponse(clientRequest, booleanSearchEngine);
+                out.write(response);
+                out.newLine();
+                out.flush();
             }
 
 
