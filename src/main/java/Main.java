@@ -13,36 +13,6 @@ public class Main {
         BooleanSearchEngine engine = new BooleanSearchEngine(new File("pdfs"));
         System.out.println(engine.search("бизнес"));
 
-
-
-
-
-
-
-
-
-
-
-
-
-/* !! */ //    для каждой страницы одного pdf своя мапа. у меня есть то что мне нужно: имя pdf, номер страницы, count
-        //это то что будет храниться после индексации
-//        File pdf = new File(".\\pdfs\\1. DevOps_MLops.pdf");
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         // здесь создайте сервер, который отвечал бы на нужные запросы
         // слушать он должен порт 8989
         // отвечать на запросы /{word} -> возвращённое значение метода search(word) в JSON-формате

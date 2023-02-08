@@ -8,25 +8,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-//это response сервера
-//[
-//    {
-//        "pdfName": "Этапы оценки проекта_ понятия, методы и полезные инструменты.pdf",
-//            "page": 12,
-//            "count": 6
-//    },
-//    {
-//        "pdfName": "Этапы оценки проекта_ понятия, методы и полезные инструменты.pdf",
-//            "page": 4,
-//            "count": 3
-//    },
-//    {
-//        "pdfName": "Этапы оценки проекта_ понятия, методы и полезные инструменты.pdf",
-//            "page": 5,
-//            "count": 3
-//    }
-//]
-
 public class BooleanSearchEngine implements SearchEngine {
     private List<Map<String, PageEntry>> listOfMaps = new ArrayList<>(); //можно сделать var
     private Map<String, PageEntry> pageEntryMap; //можно сделать var
@@ -99,7 +80,6 @@ for (File pdf : pdfsDir.listFiles()) {
             word = word.toLowerCase();
             freqs.put(word, freqs.getOrDefault(word, 0) + 1);
         }
-//        System.out.println("2 freqs " + freqs.size());
 
         //тут метод чтобы для одной страницы положить запись
         //может сделаем переработку тут?
