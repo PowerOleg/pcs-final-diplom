@@ -8,34 +8,70 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
+
+//надо не забыть удалить строчки с именами файлов и страницами
+
+
 public class BooleanSearchEngine implements SearchEngine {
-    private List<Map<String, PageEntry>> listOfMaps = new ArrayList<>(); //можно сделать var
+
+//    private List<Map<String, PageEntry>> listOfMaps = new ArrayList<>(); //можно сделать var      //3
+    private List<Map.Entry<String, Integer>> listOfEntry = new ArrayList<>(); //можно сделать var
     private Map<String, PageEntry> pageEntryMap; //можно сделать var
     private PageEntry pageEntry1;
 
     private Map<String, List<PageEntry>> searchList = new HashMap<>();             //можно сделать var
 
 
-    public Map<String, List<PageEntry>> convert(List<Map<String, PageEntry>> list) {
+//    Требуется всё также возвращать в качестве результата поиска список из PageEntry,
+//    только count в нём должен теперь содержать суммарное количество раз, которое встретилось любое из слов запроса.
+
+//    public List<PageEntry> addPageEntry() {
+//
+//
+//    }
+    public Map<String, List<PageEntry>> convert(List<Map.Entry<String, Integer>> listOfEntry /*List<Map<String, PageEntry>> list*/) {
         Map<String, List<PageEntry>> resultList = new HashMap<>();
-        Set<String> words = new TreeSet<>();
-        for (Map<String, PageEntry> map : list) {
-            words.addAll(map.keySet());
-        }
+//        Set<String> words = new TreeSet<>();
+//        for (Map<String, PageEntry> map : list) {
+//            words.addAll(map.keySet());
+//        }
 
         List<PageEntry> list1;
+        String pdfName = "";
+        int page = 0;
+        PageEntry pageEntry;
 
-        for (String word : words) {
-            list1 = new ArrayList<>();
-            for (Map<String, PageEntry> map : list) {
-                for (String mapWord : map.keySet()) {
-                    if (mapWord.equalsIgnoreCase(word)) {
-                    list1.add(map.get(mapWord));
-                    }
-                }
+        for (Map.Entry<String, Integer> entry : listOfEntry) {
+            if (entry.getKey().startsWith("?")) {
+                pdfName = entry.getKey();
+                page = entry.getValue();
+                continue;
+//                listOfEntry.remove(entry);                                              //очень долгая операция
+                //надо не забыть удалить строчки с именами файлов и страницами
             }
+
+            list1 = new ArrayList<>();
+            pageEntry1 = new PageEntry(pdfName, page, entry.getValue());
+            System.out.println(pageEntry1);                                                  //d
+//            resultList.merge(entry.getKey(), new ArrayList<PageEntry>(), (a,b) -> b.add(pageEntry));
+//            for (String word1 : resultList.keySet()) {
+//
+//            }
+
+if (resultList.containsKey(entry.getKey())) {
+list1 = resultList.get(entry.getKey());
+list1.add(pageEntry1);
+} else list1.add(pageEntry1);
+
+
+//                    if (mapWord.equalsIgnoreCase(word)) {
+//                    list1.add(map.get(mapWord));
+//                    }
+
+
             list1 = list1.stream().sorted().collect(Collectors.toList());
-            resultList.put(word, list1);
+            resultList.put(entry.getKey(), list1);
         }
         return resultList;
     }
@@ -61,16 +97,25 @@ public class BooleanSearchEngine implements SearchEngine {
 
 
 
-for (File pdf : pdfsDir.listFiles()) {
-    System.out.println("Файл " + pdf);
+        for (File pdf : pdfsDir.listFiles()) {
+            System.out.println("Файл " + pdf);
 
-    var doc = new PdfDocument(new PdfReader(pdf));
-    int length = doc.getNumberOfPages();
+            var doc = new PdfDocument(new PdfReader(pdf));
+            int length = doc.getNumberOfPages();
 
-    for (int i = 1; i <= length; i++) {
-        PdfPage page = doc.getPage(i);
-        var text = PdfTextExtractor.getTextFromPage(page);
-        var words = text.split("\\P{IsAlphabetic}+");
+            for (int i = 1; i <= length; i++) {
+                PdfPage page = doc.getPage(i);
+                var text = PdfTextExtractor.getTextFromPage(page);
+                var words = text.split("\\P{IsAlphabetic}+");
+                listOfEntry.add(Map.entry(("?" + pdf.getName()), i));
+
+
+
+
+
+
+
+
 
         Map<String, Integer> freqs = new HashMap<>(); // мапа, где ключом будет слово, а значением - частота
         for (var word : words) { // перебираем слова
@@ -84,12 +129,12 @@ for (File pdf : pdfsDir.listFiles()) {
         //тут метод чтобы для одной страницы положить запись
         //может сделаем переработку тут?
 
-        pageEntryMap = new HashMap<>();
-        for (String word : freqs.keySet()) {
-            pageEntry1 = new PageEntry(pdf.getName(), i, freqs.get(word));
-            pageEntryMap.put(word, pageEntry1);
-        }
-listOfMaps.add(pageEntryMap);
+//        pageEntryMap = new HashMap<>();                                                       //1
+        //            pageEntry1 = new PageEntry(pdf.getName(), i, freqs.get(word));
+
+
+        listOfEntry.addAll(freqs.entrySet());
+//listOfMaps.add(pageEntryMap);                                                                 //2
 //конец страницы
     }
     //новый pdf файл
@@ -98,8 +143,8 @@ listOfMaps.add(pageEntryMap);
         }
 
         //конечное действие - преобразование ... в searchList
-      searchList = convert(listOfMaps);
-//        System.out.println(searchList);                                                 //d
+      searchList = convert(listOfEntry);
+//        listOfEntry.forEach(System.out::println);
     }
 
     @Override
