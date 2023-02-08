@@ -6,39 +6,7 @@ import com.itextpdf.kernel.pdf.canvas.parser.PdfTextExtractor;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-
-public class BooleanSearchEngine implements SearchEngine {
-    private List<Map<String, PageEntry>> listOfMaps = new ArrayList<>(); //можно сделать var
-    private Map<String, PageEntry> pageEntryMap; //можно сделать var
-    private PageEntry pageEntry1;
-
-    private Map<String, List<PageEntry>> searchList = new HashMap<>();             //можно сделать var
-
-    //    Сканируя каждый пдф-файл вы перебираете его страницы, для каждой страницы извлекаете из неё слова и
-//    подсчитываете их количество. После подсчёта, для каждого уникального слова пдф-файла создаёте объект PageEntry
-//    и сохраняете в мапу в поле.
-
-//    Для подсчёта частоты слов
-//1 создаем список уникальных слов как указано ниже
-//2     List<PageEntry>> =  список уникальных слов + еще что-то???
-
-
-
-
-
-
-
-
-
-//List<PageEntry> содержит список из номеров страниц pdf файла.
-//    запрос слова бизнес выдает список где показано на какой !странице!, в каком pdf файле эта страница и
-//    сколько раз встретилось данное слово
-//[PageEntry{pdf=Этапы оценки проекта_ понятия, методы и полезные инструменты.pdf, page=12, count=6},
-// PageEntry{pdf=Этапы оценки проекта_ понятия, методы и полезные инструменты.pdf, page=4, count=3},
-// PageEntry{pdf=Этапы оценки проекта_ понятия, методы и полезные инструменты.pdf, page=5, count=3},
-// PageEntry{pdf=1. DevOps_MLops.pdf, page=5, count=2},
-// PageEntry{pdf=Что такое блокчейн.pdf, page=1, count=2},
-// PageEntry{pdf=Что такое блокчейн.pdf, page=3, count=2}]
+import java.util.stream.Collectors;
 
 //это response сервера
 //[
@@ -59,52 +27,35 @@ public class BooleanSearchEngine implements SearchEngine {
 //    }
 //]
 
+public class BooleanSearchEngine implements SearchEngine {
+    private List<Map<String, PageEntry>> listOfMaps = new ArrayList<>(); //можно сделать var
+    private Map<String, PageEntry> pageEntryMap; //можно сделать var
+    private PageEntry pageEntry1;
 
-    /* !! */   //главное - метод пробегания по pdf файлу и для каждой страницы выполняется метод добавления одной PageEntry
-//тут метод преобразования данных после индексации в результирующий лист.
-    //вычисляем кол-во страниц в документе и пробегаем
-//    public void addPageList(Map<String, Integer> freqs, String pdfName, int page) {
-//        List<Map<String, Integer>> pageEntryList1 = new ArrayList<>();
-//        //        у каждого слова свой список страниц с этим словом
-//        for (String word : freqs.keySet()) {
-//            int count = freqs.get(word);
-//            pageEntryList1.add(new PageEntry(pdfName, page, count));
-//        }
-//
-//
-//
-//
-//
-//
-//
-//
-//        pageList.add(pageEntryList1);
-//    }
+    private Map<String, List<PageEntry>> searchList = new HashMap<>();             //можно сделать var
 
-//этот метод должен быть для одного слова
+
     public Map<String, List<PageEntry>> convert(List<Map<String, PageEntry>> list) {
+        Map<String, List<PageEntry>> resultList = new HashMap<>();
         Set<String> words = new TreeSet<>();
         for (Map<String, PageEntry> map : list) {
             words.addAll(map.keySet());
         }
 
+        List<PageEntry> list1;
 
-//        List<PageEntry> list1 = new ArrayList<>();
-        Map<String, List<PageEntry>> resultList = new HashMap<>();
-
-//        for (String word : words) {
-//            for (String s : map.keySet()) {
-//                s.equalsIgnoreCase(word) {
-//
-//                }
-//            }
-////            list1 = map.values().stream().filter()
-//
-//            resultList.put(word, list1);
-//        }
-
-
-
+        for (String word : words) {
+            list1 = new ArrayList<>();
+            for (Map<String, PageEntry> map : list) {
+                for (String mapWord : map.keySet()) {
+                    if (mapWord.equalsIgnoreCase(word)) {
+                    list1.add(map.get(mapWord));
+                    }
+                }
+            }
+            list1 = list1.stream().sorted().collect(Collectors.toList());
+            resultList.put(word, list1);
+        }
         return resultList;
     }
 
@@ -148,7 +99,7 @@ for (File pdf : pdfsDir.listFiles()) {
             word = word.toLowerCase();
             freqs.put(word, freqs.getOrDefault(word, 0) + 1);
         }
-        System.out.println("2 freqs " + freqs.size());
+//        System.out.println("2 freqs " + freqs.size());
 
         //тут метод чтобы для одной страницы положить запись
         //может сделаем переработку тут?
@@ -168,6 +119,7 @@ listOfMaps.add(pageEntryMap);
 
         //конечное действие - преобразование ... в searchList
       searchList = convert(listOfMaps);
+//        System.out.println(searchList);                                                 //d
     }
 
     @Override
