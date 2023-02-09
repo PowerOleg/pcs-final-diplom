@@ -53,7 +53,7 @@ public class BooleanSearchEngine implements SearchEngine {
 
             list1 = new ArrayList<>();
             pageEntry1 = new PageEntry(pdfName, page, entry.getValue());
-            System.out.println(pageEntry1);                                                  //d
+
 //            resultList.merge(entry.getKey(), new ArrayList<PageEntry>(), (a,b) -> b.add(pageEntry));
 //            for (String word1 : resultList.keySet()) {
 //
@@ -98,7 +98,7 @@ list1.add(pageEntry1);
 
 
         for (File pdf : pdfsDir.listFiles()) {
-            System.out.println("Файл " + pdf);
+//            System.out.println("Файл " + pdf);
 
             var doc = new PdfDocument(new PdfReader(pdf));
             int length = doc.getNumberOfPages();
