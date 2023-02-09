@@ -28,10 +28,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class BooleanSearchEngine implements SearchEngine {
-    private List<Map.Entry<String, Integer>> listOfEntry = new ArrayList<>(); //можно сделать var
-    private Map<String, List<PageEntry>> searchList;             //можно сделать var
+    private List<Map.Entry<String, Integer>> listOfEntry;
+    private Map<String, List<PageEntry>> searchList;
 
     public BooleanSearchEngine(File pdfsDir) throws IOException {
+        listOfEntry = new ArrayList<>();
         for (File pdf : pdfsDir.listFiles()) {
             var doc = new PdfDocument(new PdfReader(pdf));
             int length = doc.getNumberOfPages();
@@ -59,10 +60,10 @@ public class BooleanSearchEngine implements SearchEngine {
 //конечное действие
         searchList = convert(listOfEntry);
     }
-    
+
     public Map<String, List<PageEntry>> convert(List<Map.Entry<String, Integer>> listOfEntry) {
         Map<String, List<PageEntry>> resultList = new HashMap<>();
-        List<PageEntry> pageEntries;
+        List<PageEntry> pageEntriesForWord;
         PageEntry pageEntry;
         String pdfName = "";
         int page = 0;
@@ -75,16 +76,16 @@ public class BooleanSearchEngine implements SearchEngine {
                 continue;
             }
 
-            pageEntries = new ArrayList<>();
+            pageEntriesForWord = new ArrayList<>();
             pageEntry = new PageEntry(pdfName, page, entry.getValue());
 
             if (resultList.containsKey(entry.getKey())) {
-                pageEntries = resultList.get(entry.getKey());
-                pageEntries.add(pageEntry);
-            } else pageEntries.add(pageEntry);
+                pageEntriesForWord = resultList.get(entry.getKey());
+                pageEntriesForWord.add(pageEntry);
+            } else pageEntriesForWord.add(pageEntry);
 
-            pageEntries = pageEntries.stream().sorted().collect(Collectors.toList());
-            resultList.put(entry.getKey(), pageEntries);
+            pageEntriesForWord = pageEntriesForWord.stream().sorted().collect(Collectors.toList());
+            resultList.put(entry.getKey(), pageEntriesForWord);
         }
         return resultList;
     }
