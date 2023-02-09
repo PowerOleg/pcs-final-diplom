@@ -62,7 +62,7 @@ public class BooleanSearchEngine implements SearchEngine {
 
 
 for (File pdf : pdfsDir.listFiles()) {
-    System.out.println("Файл " + pdf);
+//    System.out.println("Файл " + pdf);
 
     var doc = new PdfDocument(new PdfReader(pdf));
     int length = doc.getNumberOfPages();
