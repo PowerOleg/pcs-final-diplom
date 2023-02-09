@@ -1,3 +1,19 @@
+//попробовать сделать в конструкторе //        Spliterator<File> spliterator = Arrays.stream(pdfsDir.listFiles()).spliterator();
+////        spliterator.
+//
+//
+////сделать 1
+////    public class XmlStream {
+////        static Stream<Node> of(NodeList list) {
+////            return IntStream.range(0, list.getLength()).mapToObj(list::item);
+////        }
+////    }
+//
+////    сделать 2
+////    public static Stream<Integer> diff(Stream<Integer> stream) {
+////        return pairMap(stream, (a, b) -> b - a);
+////    }
+
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfReader;
@@ -5,101 +21,72 @@ import com.itextpdf.kernel.pdf.canvas.parser.PdfTextExtractor;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class BooleanSearchEngine implements SearchEngine {
-    private List<Map<String, PageEntry>> listOfMaps = new ArrayList<>(); //можно сделать var
-    private Map<String, PageEntry> pageEntryMap; //можно сделать var
-    private PageEntry pageEntry1;
-
-    private Map<String, List<PageEntry>> searchList = new HashMap<>();             //можно сделать var
-
-
-    public Map<String, List<PageEntry>> convert(List<Map<String, PageEntry>> list) {
-        Map<String, List<PageEntry>> resultList = new HashMap<>();
-        Set<String> words = new TreeSet<>();
-        for (Map<String, PageEntry> map : list) {
-            words.addAll(map.keySet());
-        }
-
-        List<PageEntry> list1;
-
-        for (String word : words) {
-            list1 = new ArrayList<>();
-            for (Map<String, PageEntry> map : list) {
-                for (String mapWord : map.keySet()) {
-                    if (mapWord.equalsIgnoreCase(word)) {
-                    list1.add(map.get(mapWord));
-                    }
-                }
-            }
-            list1 = list1.stream().sorted().collect(Collectors.toList());
-            resultList.put(word, list1);
-        }
-        return resultList;
-    }
-
-
+    private List<Map.Entry<String, Integer>> listOfEntry = new ArrayList<>(); //можно сделать var
+    private Map<String, List<PageEntry>> searchList;             //можно сделать var
 
     public BooleanSearchEngine(File pdfsDir) throws IOException {
-//        Spliterator<File> spliterator = Arrays.stream(pdfsDir.listFiles()).spliterator();
-//        spliterator.
+        for (File pdf : pdfsDir.listFiles()) {
+            var doc = new PdfDocument(new PdfReader(pdf));
+            int length = doc.getNumberOfPages();
+            PdfPage page;
+            Map<String, Integer> freqs;
+            for (int i = 1; i <= length; i++) {
+                page = doc.getPage(i);
+                var text = PdfTextExtractor.getTextFromPage(page);
+                var words = text.split("\\P{IsAlphabetic}+");
 
+                listOfEntry.add(Map.entry(("?" + pdf.getName()), i));
+                freqs = new HashMap<>();
+                for (var word : words) {
+                    if (word.isEmpty()) {
+                        continue;
+                    }
+                    word = word.toLowerCase();
+                    freqs.put(word, freqs.getOrDefault(word, 0) + 1);
+                }
+                listOfEntry.addAll(freqs.entrySet());
+//конец страницы
+            }
+//конец pdf файла
+        }
+//конечное действие
+        searchList = convert(listOfEntry);
+    }
+    
+    public Map<String, List<PageEntry>> convert(List<Map.Entry<String, Integer>> listOfEntry) {
+        Map<String, List<PageEntry>> resultList = new HashMap<>();
+        List<PageEntry> pageEntries;
+        PageEntry pageEntry;
+        String pdfName = "";
+        int page = 0;
 
-        //сделать 1
-//    public class XmlStream {
-//        static Stream<Node> of(NodeList list) {
-//            return IntStream.range(0, list.getLength()).mapToObj(list::item);
-//        }
-//    }
-
-//    сделать 2
-//    public static Stream<Integer> diff(Stream<Integer> stream) {
-//        return pairMap(stream, (a, b) -> b - a);
-//    }
-
-
-
-for (File pdf : pdfsDir.listFiles()) {
-//    System.out.println("Файл " + pdf);
-
-    var doc = new PdfDocument(new PdfReader(pdf));
-    int length = doc.getNumberOfPages();
-
-    for (int i = 1; i <= length; i++) {
-        PdfPage page = doc.getPage(i);
-        var text = PdfTextExtractor.getTextFromPage(page);
-        var words = text.split("\\P{IsAlphabetic}+");
-
-        Map<String, Integer> freqs = new HashMap<>(); // мапа, где ключом будет слово, а значением - частота
-        for (var word : words) { // перебираем слова
-            if (word.isEmpty()) {
+        for (Map.Entry<String, Integer> entry : listOfEntry) {
+            if (entry.getKey().startsWith("?")) {
+                pdfName = entry.getKey();
+                pdfName = pdfName.substring(1);
+                page = entry.getValue();
                 continue;
             }
-            word = word.toLowerCase();
-            freqs.put(word, freqs.getOrDefault(word, 0) + 1);
+
+            pageEntries = new ArrayList<>();
+            pageEntry = new PageEntry(pdfName, page, entry.getValue());
+
+            if (resultList.containsKey(entry.getKey())) {
+                pageEntries = resultList.get(entry.getKey());
+                pageEntries.add(pageEntry);
+            } else pageEntries.add(pageEntry);
+
+            pageEntries = pageEntries.stream().sorted().collect(Collectors.toList());
+            resultList.put(entry.getKey(), pageEntries);
         }
-
-        //тут метод чтобы для одной страницы положить запись
-        //может сделаем переработку тут?
-
-        pageEntryMap = new HashMap<>();
-        for (String word : freqs.keySet()) {
-            pageEntry1 = new PageEntry(pdf.getName(), i, freqs.get(word));
-            pageEntryMap.put(word, pageEntry1);
-        }
-listOfMaps.add(pageEntryMap);
-//конец страницы
-    }
-    //новый pdf файл
-//    System.out.println("3 wordListPerPage " + wordListPerPage.size());
-
-        }
-
-        //конечное действие - преобразование ... в searchList
-      searchList = convert(listOfMaps);
-//        System.out.println(searchList);                                                 //d
+        return resultList;
     }
 
     @Override
