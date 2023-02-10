@@ -29,6 +29,18 @@ public class PageEntry implements Comparable<PageEntry> {
         return Objects.hash(pdfName, page, count);
     }
 
+    public String getPdfName() {
+        return pdfName;
+    }
+
+    public int getPage() {
+        return page;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
     @Override
     public String toString() {
         return "PageEntry{" +
@@ -37,7 +49,8 @@ public class PageEntry implements Comparable<PageEntry> {
                 ", count=" + count +
                 '}';
     }
-// списки ответов для каждого слова должны быть отсортированы в порядке уменьшения поля count.
-    //    класс должен выдать:
-//    PageEntry{pdf=Этапы оценки проекта_ понятия, методы и полезные инструменты.pdf, page=12, count=6}
+
+    public boolean compare(PageEntry pageEntry) {
+        return this.pdfName.equalsIgnoreCase(pageEntry.getPdfName()) && this.page == pageEntry.getPage();
+    }
 }

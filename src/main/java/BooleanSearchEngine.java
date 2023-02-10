@@ -14,25 +14,29 @@
 ////        return pairMap(stream, (a, b) -> b - a);
 ////    }
 
+//    можно не поточное впихнуть в поток и работать с этим
+//    Stream.of("a1", "a2", "a3")
+//                .findFirst()
+//                .ifPresent(System.out::println);  // a1
+
+
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.canvas.parser.PdfTextExtractor;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class BooleanSearchEngine implements SearchEngine {
-    private List<Map.Entry<String, Integer>> listOfEntry;
-    private Map<String, List<PageEntry>> searchList;
-
-    public BooleanSearchEngine(File pdfsDir) throws IOException {
-        listOfEntry = new ArrayList<>();
+    private final Map<String, List<PageEntry>> searchList;
+    private final File stopWordsFile;
+    public BooleanSearchEngine(File pdfsDir, File file) throws IOException {
+        this.stopWordsFile = file;                                   //1
+        List<Map.Entry<String, Integer>> listOfEntry = new ArrayList<>();
         for (File pdf : pdfsDir.listFiles()) {
             var doc = new PdfDocument(new PdfReader(pdf));
             int length = doc.getNumberOfPages();
@@ -91,7 +95,49 @@ public class BooleanSearchEngine implements SearchEngine {
     }
 
     @Override
-    public List<PageEntry> search(String word) {
-        return searchList.computeIfAbsent(word, n -> null);
+    public List<PageEntry> search(String words) {
+        String[] wordArray = words.split(" ");
+        List<List<PageEntry>> listOfPageEntryLists = new ArrayList<>();
+        List<PageEntry> listForPageEntrySummed = new ArrayList<>();
+        List<PageEntry> removeList = new ArrayList<>();
+
+        List<String> stopList = null;                                        //1  вопрос закрытия bufferedReader потока
+        try {
+            stopList = StopWords.loadStopWordsList(stopWordsFile);
+        } catch (FileNotFoundException e) {
+            System.out.println("Выбран не верный файл");
+            throw new RuntimeException(e);
+        }
+        for (String word : wordArray) {
+            if (stopList.stream().noneMatch(n -> n.equalsIgnoreCase(word))) {
+                System.out.println("ъеъ");                                        //d показывает сколько слов вошло в поиск
+                listOfPageEntryLists.add(searchList.computeIfAbsent(word, n -> null));
+            }
+        }
+        List<PageEntry> bigList = listOfPageEntryLists.stream().flatMap(Collection::stream).collect(Collectors.toList());
+        System.out.println("1 " + bigList);                                                    //d
+
+
+        for (PageEntry pageEntry1 : bigList) {
+            for (PageEntry pageEntry2 : bigList) {
+                if (pageEntry1 == pageEntry2) continue;
+                if (pageEntry1.compare(pageEntry2)) {
+                    removeList.add(pageEntry1);
+                    removeList.add(pageEntry2);
+                    listForPageEntrySummed.add(new PageEntry(pageEntry1.getPdfName(), pageEntry1.getPage(),
+                            (pageEntry1.getCount() + pageEntry2.getCount())));
+                }
+            }
+        }
+        System.out.println("3 listForPageEntrySummed " + listForPageEntrySummed);           //d
+
+        System.out.println("4 removeList " + removeList);                                   //d
+        bigList.removeAll(removeList);
+        System.out.println("1 " + bigList);                                                 //d
+
+        List<PageEntry> resultList = new ArrayList<>(bigList);
+        resultList.addAll(listForPageEntrySummed.stream().distinct().collect(Collectors.toList()));
+
+        return resultList.stream().sorted().collect(Collectors.toList());
     }
 }
