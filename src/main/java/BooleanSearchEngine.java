@@ -13,6 +13,11 @@
 ////    public static Stream<Integer> diff(Stream<Integer> stream) {
 ////        return pairMap(stream, (a, b) -> b - a);
 ////    }
+//    можно не поточное впихнуть в поток и работать с этим
+//    Stream.of("a1", "a2", "a3")
+//                .findFirst()
+//                .ifPresent(System.out::println);  // a1
+
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfReader;
@@ -20,17 +25,15 @@ import com.itextpdf.kernel.pdf.canvas.parser.PdfTextExtractor;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class BooleanSearchEngine implements SearchEngine {
-    private List<Map.Entry<String, Integer>> listOfEntry = new ArrayList<>(); //можно сделать var
-    private Map<String, List<PageEntry>> searchList;             //можно сделать var
+    private List<Map.Entry<String, Integer>> listOfEntry;
+    private Map<String, List<PageEntry>> searchList;
 
     public BooleanSearchEngine(File pdfsDir) throws IOException {
+        listOfEntry = new ArrayList<>();
         for (File pdf : pdfsDir.listFiles()) {
             var doc = new PdfDocument(new PdfReader(pdf));
             int length = doc.getNumberOfPages();
@@ -61,7 +64,7 @@ public class BooleanSearchEngine implements SearchEngine {
 
     public Map<String, List<PageEntry>> convert(List<Map.Entry<String, Integer>> listOfEntry) {
         Map<String, List<PageEntry>> resultList = new HashMap<>();
-        List<PageEntry> pageEntries;
+        List<PageEntry> pageEntriesForWord;
         PageEntry pageEntry;
         String pdfName = "";
         int page = 0;
@@ -74,22 +77,56 @@ public class BooleanSearchEngine implements SearchEngine {
                 continue;
             }
 
-            pageEntries = new ArrayList<>();
+            pageEntriesForWord = new ArrayList<>();
             pageEntry = new PageEntry(pdfName, page, entry.getValue());
 
             if (resultList.containsKey(entry.getKey())) {
-                pageEntries = resultList.get(entry.getKey());
-                pageEntries.add(pageEntry);
-            } else pageEntries.add(pageEntry);
+                pageEntriesForWord = resultList.get(entry.getKey());
+                pageEntriesForWord.add(pageEntry);
+            } else pageEntriesForWord.add(pageEntry);
 
-            pageEntries = pageEntries.stream().sorted().collect(Collectors.toList());
-            resultList.put(entry.getKey(), pageEntries);
+            pageEntriesForWord = pageEntriesForWord.stream().sorted().collect(Collectors.toList());
+            resultList.put(entry.getKey(), pageEntriesForWord);
         }
         return resultList;
     }
 
     @Override
-    public List<PageEntry> search(String word) {
-        return searchList.computeIfAbsent(word, n -> null);
+    public List<PageEntry> search(String words) {
+        String[] wordArray = words.split(" ");
+        List<List<PageEntry>> listOfPageEntryLists = new ArrayList<>();
+        List<PageEntry> listForPageEntrySummed = new ArrayList<>();
+        List<PageEntry> removeList = new ArrayList<>();
+
+
+        for (String word : wordArray) {
+            listOfPageEntryLists.add(searchList.computeIfAbsent(word, n -> null));
+        }
+        List<PageEntry> bigList = listOfPageEntryLists.stream().flatMap(Collection::stream).collect(Collectors.toList());
+        System.out.println("1 " + bigList);
+
+
+        for (PageEntry pageEntry1 : bigList) {
+            for (PageEntry pageEntry2 : bigList) {
+                if (pageEntry1 == pageEntry2) continue;
+                if (pageEntry1.compare(pageEntry2)) {
+                    removeList.add(pageEntry1);
+                    removeList.add(pageEntry2);
+                    listForPageEntrySummed.add(new PageEntry(pageEntry1.getPdfName(), pageEntry1.getPage(),
+                            (pageEntry1.getCount() + pageEntry2.getCount())));
+                }
+            }
+        }
+        listForPageEntrySummed = listForPageEntrySummed.stream().distinct().collect(Collectors.toList());
+        System.out.println("3 listForPageEntrySummed " + listForPageEntrySummed);           //d
+
+        System.out.println("4 removeList " + removeList);                                   //d
+        bigList.removeAll(removeList);
+        System.out.println("1 " + bigList);                                                 //d
+
+        List<PageEntry> resultList = new ArrayList<>(bigList);
+        resultList.addAll(listForPageEntrySummed);
+
+        return resultList.stream().sorted().collect(Collectors.toList());
     }
 }
