@@ -8,8 +8,8 @@ import java.util.stream.Collectors;
 public class Main {
     public static void main(String[] args) throws Exception {
         long startTime = System.nanoTime();
-        BooleanSearchEngine engine = new BooleanSearchEngine(new File("pdfs"));
-        System.out.println(engine.search("работать с"));
+        BooleanSearchEngine engine = new BooleanSearchEngine(new File("pdfs"), new File("stop-ru.txt"));
+        System.out.println(engine.search("нельзя выразить в трёх словах"));
         long endTime = System.nanoTime();
         long duration = (endTime - startTime);
         System.out.println(duration);
