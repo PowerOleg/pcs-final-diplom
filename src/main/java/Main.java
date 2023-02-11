@@ -25,11 +25,13 @@ import java.util.stream.Collectors;
 //                                                                                     //со следующим элементом действия - нет
 //                }                                                             //проблема в двойном ретурне
 public class Main {
+public static final String STOP_WORDS_FILE_NAME = "stop-ru.txt";
+public static final String DIRECTORY_OF_PDFS = "pdfs";
     public static void main(String[] args) {
         long startTime = System.nanoTime();
         BooleanSearchEngine engine = null;
         try {
-            engine = new BooleanSearchEngine(new File("pdfs"), new File("stop-ru.txt"));
+            engine = new BooleanSearchEngine(new File(DIRECTORY_OF_PDFS), new File(STOP_WORDS_FILE_NAME));
         } catch (IOException e) {
             System.out.println("Выбран не верный файл со стоп словами");
             throw new RuntimeException(e);
@@ -38,11 +40,11 @@ public class Main {
         long endTime = System.nanoTime();
         long duration = (endTime - startTime);
         System.out.println(duration);
-
-        // здесь создайте сервер, который отвечал бы на нужные запросы
-        // слушать он должен порт 8989
-        // отвечать на запросы /{word} -> возвращённое значение метода search(word) в JSON-формате
-
+//
+//         здесь создайте сервер, который отвечал бы на нужные запросы
+//         слушать он должен порт 8989
+//         отвечать на запросы /{word} -> возвращённое значение метода search(word) в JSON-формате
+//
 
 
 //
@@ -69,8 +71,8 @@ public class Main {
 ////        }
 ////
 ////
-
-//        List<PageEntry> list1 = bigList.stream().filter(n -> n.comparingList(bigList)).collect(Collectors.toList());
+//
+//        List<PageEntry> list1 = bigList.stream()/*.filter(n -> n.comparingList(bigList))*/.collect(Collectors.toList());
 //        System.out.println("3 " + list1);
 //
 ////        resultList.addAll(bigList);
@@ -90,7 +92,7 @@ public class Main {
 //        resultList.addAll(combinedList);
 //        System.out.println("resultList " + resultList.stream()/*.distinct()*/.collect(Collectors.toList()));
 ////    }
-////
+//
 
 
     }

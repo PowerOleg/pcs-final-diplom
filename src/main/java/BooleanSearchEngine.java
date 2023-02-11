@@ -69,7 +69,7 @@ public class BooleanSearchEngine implements SearchEngine {
         Map<String, List<PageEntry>> resultList = new HashMap<>();
         List<PageEntry> pageEntriesForWord;
         PageEntry pageEntry;
-        String pdfName = "";
+        var pdfName = "";
         int page = 0;
 
         for (Map.Entry<String, Integer> entry : listOfEntry) {
@@ -88,7 +88,7 @@ public class BooleanSearchEngine implements SearchEngine {
                 pageEntriesForWord.add(pageEntry);
             } else pageEntriesForWord.add(pageEntry);
 
-            pageEntriesForWord = pageEntriesForWord.stream().sorted().collect(Collectors.toList());
+//            pageEntriesForWord = pageEntriesForWord.stream().sorted().collect(Collectors.toList());
             resultList.put(entry.getKey(), pageEntriesForWord);
         }
         return resultList;
@@ -96,7 +96,7 @@ public class BooleanSearchEngine implements SearchEngine {
 
     @Override
     public List<PageEntry> search(String words) {
-        String[] wordArray = words.split(" ");
+        var wordArray = words.split(" ");
         List<List<PageEntry>> listOfPageEntryLists = new ArrayList<>();
         List<PageEntry> listForPageEntrySummed = new ArrayList<>();
         List<PageEntry> removeList = new ArrayList<>();
@@ -127,10 +127,18 @@ public class BooleanSearchEngine implements SearchEngine {
         System.out.println("1 " + bigList);                                                 //d
 
         System.out.println("3 listForPageEntrySummed " + listForPageEntrySummed);         //d показывает без удаления повторов
-        List<PageEntry> resultList = new ArrayList<>(bigList);
+        var resultList = new ArrayList<>(bigList);
         resultList.addAll(listForPageEntrySummed.stream().distinct().collect(Collectors.toList()));
 
         System.out.println("4 removeList " + removeList);                                   //d
         return resultList.stream().sorted().collect(Collectors.toList());
+    }
+
+    public Map<String, List<PageEntry>> getSearchList() {
+        return searchList;
+    }
+
+    public StopWords getStopWords() {
+        return stopWords;
     }
 }
