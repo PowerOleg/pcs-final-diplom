@@ -26,16 +26,16 @@ import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.canvas.parser.PdfTextExtractor;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class BooleanSearchEngine implements SearchEngine {
     private final Map<String, List<PageEntry>> searchList;
-    private final File stopWordsFile;
+    private final StopWords stopWords;
     public BooleanSearchEngine(File pdfsDir, File file) throws IOException {
-        this.stopWordsFile = file;                                   //1
+        stopWords = new StopWords(file);
+
         List<Map.Entry<String, Integer>> listOfEntry = new ArrayList<>();
         for (File pdf : pdfsDir.listFiles()) {
             var doc = new PdfDocument(new PdfReader(pdf));
@@ -101,15 +101,8 @@ public class BooleanSearchEngine implements SearchEngine {
         List<PageEntry> listForPageEntrySummed = new ArrayList<>();
         List<PageEntry> removeList = new ArrayList<>();
 
-        List<String> stopList = null;                                        //1  вопрос закрытия bufferedReader потока
-        try {
-            stopList = StopWords.loadStopWordsList(stopWordsFile);
-        } catch (FileNotFoundException e) {
-            System.out.println("Выбран не верный файл");
-            throw new RuntimeException(e);
-        }
         for (String word : wordArray) {
-            if (stopList.stream().noneMatch(n -> n.equalsIgnoreCase(word))) {
+            if (stopWords.getStopWordsList().stream().noneMatch(n -> n.equalsIgnoreCase(word))) {
                 System.out.println("ъеъ");                                        //d показывает сколько слов вошло в поиск
                 listOfPageEntryLists.add(searchList.computeIfAbsent(word, n -> null));
             }
@@ -129,15 +122,15 @@ public class BooleanSearchEngine implements SearchEngine {
                 }
             }
         }
-        System.out.println("3 listForPageEntrySummed " + listForPageEntrySummed);           //d
 
-        System.out.println("4 removeList " + removeList);                                   //d
         bigList.removeAll(removeList);
         System.out.println("1 " + bigList);                                                 //d
 
+        System.out.println("3 listForPageEntrySummed " + listForPageEntrySummed);         //d показывает без удаления повторов
         List<PageEntry> resultList = new ArrayList<>(bigList);
         resultList.addAll(listForPageEntrySummed.stream().distinct().collect(Collectors.toList()));
 
+        System.out.println("4 removeList " + removeList);                                   //d
         return resultList.stream().sorted().collect(Collectors.toList());
     }
 }
