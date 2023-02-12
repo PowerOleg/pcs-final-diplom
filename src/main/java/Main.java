@@ -1,4 +1,5 @@
 import java.io.File;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +30,6 @@ public class Main {
 public static final String STOP_WORDS_FILE_NAME = "stop-ru.txt";
 public static final String DIRECTORY_OF_PDFS = "pdfs";
     public static void main(String[] args) {
-        long startTime = System.nanoTime();
         BooleanSearchEngine engine = null;
         try {
             engine = new BooleanSearchEngine(new File(DIRECTORY_OF_PDFS), new File(STOP_WORDS_FILE_NAME));
@@ -37,13 +37,31 @@ public static final String DIRECTORY_OF_PDFS = "pdfs";
             System.out.println("Выбран не верный файл со стоп словами");
             throw new RuntimeException(e);
         }
-        System.out.println(engine.search("объяснить концепцию"));
-        long endTime = System.nanoTime();
-        long duration = (endTime - startTime);
-        System.out.println(duration);
-////
-////         здесь создайте сервер, который отвечал бы на нужные запросы
-////         слушать он должен порт 8989
+
+
+        Thread searchServer = new Thread(new SearchServer(engine, new ServerLogic()));
+        searchServer.start();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//        System.out.println(engine.search("объяснить концепцию"));
+
+
 ////         отвечать на запросы /{word} -> возвращённое значение метода search(word) в JSON-формате
 ////
 //
@@ -106,6 +124,7 @@ public static final String DIRECTORY_OF_PDFS = "pdfs";
 ////        resultList.addAll(combinedList);
 ////        System.out.println("resultList " + resultList.stream()/*.distinct()*/.collect(Collectors.toList()));
 ////    }
+
 
 
 
