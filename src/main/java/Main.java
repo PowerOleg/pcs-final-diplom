@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 //List<PageEntry> list2 = bigList.stream().filter(n -> {                //что-то тут мало сравнений
 //            boolean result = false;
@@ -40,15 +41,16 @@ public static final String DIRECTORY_OF_PDFS = "pdfs";
         long endTime = System.nanoTime();
         long duration = (endTime - startTime);
         System.out.println(duration);
+////
+////         здесь создайте сервер, который отвечал бы на нужные запросы
+////         слушать он должен порт 8989
+////         отвечать на запросы /{word} -> возвращённое значение метода search(word) в JSON-формате
+////
 //
-//         здесь создайте сервер, который отвечал бы на нужные запросы
-//         слушать он должен порт 8989
-//         отвечать на запросы /{word} -> возвращённое значение метода search(word) в JSON-формате
 //
-
-
 //
 //        List<PageEntry> bigList = new ArrayList<>(List.of(new PageEntry("a", 1, 2),
+//                new PageEntry("a", 1, 10),
 //                new PageEntry("b", 1, 3),
 //                new PageEntry("a", 2, 1),
 //                new PageEntry("a", 1, 4)));
@@ -71,12 +73,24 @@ public static final String DIRECTORY_OF_PDFS = "pdfs";
 ////        }
 ////
 ////
+////        persons
+////                .stream()
+////                .reduce((p1, p2) -> p1.age > p2.age ? p1 : p2)
+////                .ifPresent(System.out::println);
 //
-//        List<PageEntry> list1 = bigList.stream()/*.filter(n -> n.comparingList(bigList))*/.collect(Collectors.toList());
+//        Optional<PageEntry> list1 = bigList.stream().reduce((p1, p2) -> p1.compare(p2) ?
+//                new PageEntry(p1.getPdfName(), p1.getPage(), p1.getCount()+ p2.getCount()) : null);
 //        System.out.println("3 " + list1);
 //
+//        if (list1.isPresent()) {
+//            System.out.println(list1.get());
+//            combinedList.add(list1.get());
+//        } else {
+//            System.out.println(list1.get());
+//        }
+//
 ////        resultList.addAll(bigList);
-//        combinedList = combinedList.stream().distinct().collect(Collectors.toList());
+////        combinedList = combinedList.stream().distinct().collect(Collectors.toList());
 //        System.out.println("3 combinationList" + combinedList);
 //
 //        System.out.println("4 removeList " + removeList);
@@ -85,14 +99,14 @@ public static final String DIRECTORY_OF_PDFS = "pdfs";
 ////            resultList.remove(p);
 ////        }
 //
-//        bigList.removeAll(removeList);
+////        bigList.removeAll(removeList);
 //        System.out.println(bigList);
 //
-//        List<PageEntry> resultList = new ArrayList<>(bigList);
-//        resultList.addAll(combinedList);
-//        System.out.println("resultList " + resultList.stream()/*.distinct()*/.collect(Collectors.toList()));
+////        List<PageEntry> resultList = new ArrayList<>(bigList);
+////        resultList.addAll(combinedList);
+////        System.out.println("resultList " + resultList.stream()/*.distinct()*/.collect(Collectors.toList()));
 ////    }
-//
+
 
 
     }

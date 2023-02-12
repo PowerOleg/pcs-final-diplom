@@ -31,13 +31,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class BooleanSearchEngine implements SearchEngine {
-    private final Map<String, List<PageEntry>> searchList;
+    private final Map<String, List<PageEntry>> searchList = new HashMap<>();
     private final StopWords stopWords;
+
     public BooleanSearchEngine(File pdfsDir, File file) throws IOException {
         stopWords = new StopWords(file);
 
-        List<Map.Entry<String, Integer>> listOfEntry = new ArrayList<>();
-        for (File pdf : pdfsDir.listFiles()) {
+        for (File pdf : Objects.requireNonNull(pdfsDir.listFiles())) {
             var doc = new PdfDocument(new PdfReader(pdf));
             int length = doc.getNumberOfPages();
             PdfPage page;
@@ -46,8 +46,6 @@ public class BooleanSearchEngine implements SearchEngine {
                 page = doc.getPage(i);
                 var text = PdfTextExtractor.getTextFromPage(page);
                 var words = text.split("\\P{IsAlphabetic}+");
-
-                listOfEntry.add(Map.entry(("?" + pdf.getName()), i));
                 freqs = new HashMap<>();
                 for (var word : words) {
                     if (word.isEmpty()) {
@@ -56,42 +54,27 @@ public class BooleanSearchEngine implements SearchEngine {
                     word = word.toLowerCase();
                     freqs.put(word, freqs.getOrDefault(word, 0) + 1);
                 }
-                listOfEntry.addAll(freqs.entrySet());
+//переработка и отправка данных в searchList страница за страницей
+                for (String word : freqs.keySet()) {
+                    searchList.put(word, getListOfPageEntries(word, pdf.getName(), i, freqs.get(word)));
+                }
 //конец страницы
             }
 //конец pdf файла
         }
 //конечное действие
-        searchList = convert(listOfEntry);
     }
 
-    public Map<String, List<PageEntry>> convert(List<Map.Entry<String, Integer>> listOfEntry) {
-        Map<String, List<PageEntry>> resultList = new HashMap<>();
-        List<PageEntry> pageEntriesForWord;
-        PageEntry pageEntry;
-        var pdfName = "";
-        int page = 0;
-
-        for (Map.Entry<String, Integer> entry : listOfEntry) {
-            if (entry.getKey().startsWith("?")) {
-                pdfName = entry.getKey();
-                pdfName = pdfName.substring(1);
-                page = entry.getValue();
-                continue;
-            }
-
-            pageEntriesForWord = new ArrayList<>();
-            pageEntry = new PageEntry(pdfName, page, entry.getValue());
-
-            if (resultList.containsKey(entry.getKey())) {
-                pageEntriesForWord = resultList.get(entry.getKey());
-                pageEntriesForWord.add(pageEntry);
-            } else pageEntriesForWord.add(pageEntry);
-
-//            pageEntriesForWord = pageEntriesForWord.stream().sorted().collect(Collectors.toList());
-            resultList.put(entry.getKey(), pageEntriesForWord);
+    public List<PageEntry> getListOfPageEntries(String word, String pdfName, int pageNumber, int count) {
+        List<PageEntry> pageEntriesForWord = new ArrayList<>();
+        PageEntry pageEntry = new PageEntry(pdfName, pageNumber, count);
+        if (searchList.containsKey(word)) {
+            pageEntriesForWord = searchList.get(word);
+            pageEntriesForWord.add(pageEntry);
+        } else {
+            pageEntriesForWord.add(pageEntry);
         }
-        return resultList;
+        return pageEntriesForWord;
     }
 
     @Override
@@ -103,12 +86,12 @@ public class BooleanSearchEngine implements SearchEngine {
 
         for (String word : wordArray) {
             if (stopWords.getStopWordsList().stream().noneMatch(n -> n.equalsIgnoreCase(word))) {
-                System.out.println("ъеъ");                                        //d показывает сколько слов вошло в поиск
+//                System.out.println("ъеъ");                                        //d показывает сколько слов вошло в поиск
                 listOfPageEntryLists.add(searchList.computeIfAbsent(word, n -> null));
             }
         }
         List<PageEntry> bigList = listOfPageEntryLists.stream().flatMap(Collection::stream).collect(Collectors.toList());
-        System.out.println("1 " + bigList);                                                    //d
+//        System.out.println("1 " + bigList);                                                    //d
 
 
         for (PageEntry pageEntry1 : bigList) {
@@ -124,13 +107,13 @@ public class BooleanSearchEngine implements SearchEngine {
         }
 
         bigList.removeAll(removeList);
-        System.out.println("1 " + bigList);                                                 //d
+//        System.out.println("1 " + bigList);                                                 //d
 
-        System.out.println("3 listForPageEntrySummed " + listForPageEntrySummed);         //d показывает без удаления повторов
+//        System.out.println("3 listForPageEntrySummed " + listForPageEntrySummed);         //d показывает без удаления повторов
         var resultList = new ArrayList<>(bigList);
         resultList.addAll(listForPageEntrySummed.stream().distinct().collect(Collectors.toList()));
 
-        System.out.println("4 removeList " + removeList);                                   //d
+//        System.out.println("4 removeList " + removeList);                                   //d
         return resultList.stream().sorted().collect(Collectors.toList());
     }
 
