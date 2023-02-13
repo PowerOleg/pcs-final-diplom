@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 //List<PageEntry> list2 = bigList.stream().filter(n -> {                //что-то тут мало сравнений
 //            boolean result = false;
@@ -27,6 +29,7 @@ import java.util.stream.Collectors;
 //                                                                                     //со следующим элементом действия - нет
 //                }                                                             //проблема в двойном ретурне
 public class Main {
+//    public final ExecutorService executorService = Executors.newFixedThreadPool(4);
 public static final String STOP_WORDS_FILE_NAME = "stop-ru.txt";
 public static final String DIRECTORY_OF_PDFS = "pdfs";
     public static void main(String[] args) {
@@ -39,8 +42,8 @@ public static final String DIRECTORY_OF_PDFS = "pdfs";
         }
 
 
-        Thread searchServer = new Thread(new SearchServer(engine, new ServerLogic()));
-        searchServer.start();
+        MainServer mainServer = new MainServer(engine, new ServerLogic());
+        mainServer.start();
 
 
 

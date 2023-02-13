@@ -1,24 +1,20 @@
 import java.io.*;
-import java.net.ServerSocket;
 import java.net.Socket;
 
 public class SearchServer implements Runnable {
-    public static final int PORT = 8989;
+    private final Socket socket;
     private final BooleanSearchEngine booleanSearchEngine;
     private final ServerLogic serverLogic;
 
-    public SearchServer(BooleanSearchEngine booleanSearchEngine, ServerLogic serverLogic) {
+    public SearchServer(Socket socket, BooleanSearchEngine booleanSearchEngine, ServerLogic serverLogic) {
+        this.socket = socket;
         this.booleanSearchEngine = booleanSearchEngine;
         this.serverLogic = serverLogic;
     }
 
     @Override
     public void run() {
-        try (ServerSocket serverSocket = new ServerSocket(PORT)) {
-            System.out.println("Сервер запущен");
-            while (true) {
-                try (Socket socket = serverSocket.accept();
-                     BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                      BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()))) {
                     String clientRequest = in.readLine();
                     System.out.println("Запрос клиента: " + clientRequest);
@@ -30,11 +26,5 @@ public class SearchServer implements Runnable {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-
-
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
-    }
-}
