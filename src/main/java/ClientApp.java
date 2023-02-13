@@ -14,14 +14,8 @@ public class ClientApp {
              BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
              PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
 
-//            JSONObject jsonObject1 = new JSONObject();
-//            jsonObject1.put("title", "колбаса");
-//            jsonObject1.put("date", "2023.02.01");
-//            jsonObject1.put("sum", "100");
-//            out.println(jsonObject1.toJSONString());
 
-
-            out.println("бизнес");
+            out.println("объяснить концепцию");
             String serverResponse2 = in.readLine();
             System.out.println(serverResponse2);
         } catch (IOException e) {

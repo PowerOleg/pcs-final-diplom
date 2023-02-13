@@ -1,25 +1,3 @@
-//попробовать сделать в конструкторе //        Spliterator<File> spliterator = Arrays.stream(pdfsDir.listFiles()).spliterator();
-////        spliterator.
-//
-//
-////сделать 1
-////    public class XmlStream {
-////        static Stream<Node> of(NodeList list) {
-////            return IntStream.range(0, list.getLength()).mapToObj(list::item);
-////        }
-////    }
-//
-////    сделать 2
-////    public static Stream<Integer> diff(Stream<Integer> stream) {
-////        return pairMap(stream, (a, b) -> b - a);
-////    }
-
-//    можно не поточное впихнуть в поток и работать с этим
-//    Stream.of("a1", "a2", "a3")
-//                .findFirst()
-//                .ifPresent(System.out::println);  // a1
-
-
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfReader;
@@ -54,15 +32,11 @@ public class BooleanSearchEngine implements SearchEngine {
                     word = word.toLowerCase();
                     freqs.put(word, freqs.getOrDefault(word, 0) + 1);
                 }
-//переработка и отправка данных в searchList страница за страницей
                 for (String word : freqs.keySet()) {
                     searchList.put(word, getListOfPageEntries(word, pdf.getName(), i, freqs.get(word)));
                 }
-//конец страницы
             }
-//конец pdf файла
         }
-//конечное действие
     }
 
     public List<PageEntry> getListOfPageEntries(String word, String pdfName, int pageNumber, int count) {
@@ -86,14 +60,10 @@ public class BooleanSearchEngine implements SearchEngine {
 
         for (String word : wordArray) {
             if (stopWords.getStopWordsList().stream().noneMatch(n -> n.equalsIgnoreCase(word))) {
-//                System.out.println("ъеъ");                                        //d показывает сколько слов вошло в поиск
                 listOfPageEntryLists.add(searchList.computeIfAbsent(word, n -> null));
             }
         }
         List<PageEntry> bigList = listOfPageEntryLists.stream().flatMap(Collection::stream).collect(Collectors.toList());
-//        System.out.println("1 " + bigList);                                                    //d
-
-
         for (PageEntry pageEntry1 : bigList) {
             for (PageEntry pageEntry2 : bigList) {
                 if (pageEntry1 == pageEntry2) continue;
@@ -105,15 +75,9 @@ public class BooleanSearchEngine implements SearchEngine {
                 }
             }
         }
-
         bigList.removeAll(removeList);
-//        System.out.println("1 " + bigList);                                                 //d
-
-//        System.out.println("3 listForPageEntrySummed " + listForPageEntrySummed);         //d показывает без удаления повторов
         var resultList = new ArrayList<>(bigList);
         resultList.addAll(listForPageEntrySummed.stream().distinct().collect(Collectors.toList()));
-
-//        System.out.println("4 removeList " + removeList);                                   //d
         return resultList.stream().sorted().collect(Collectors.toList());
     }
 
