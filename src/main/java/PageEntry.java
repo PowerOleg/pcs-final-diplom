@@ -49,8 +49,4 @@ public class PageEntry implements Comparable<PageEntry> {
                 ", count=" + count +
                 '}';
     }
-
-    public boolean compare(PageEntry pageEntry) {
-        return this.pdfName.equalsIgnoreCase(pageEntry.getPdfName()) && this.page == pageEntry.getPage();
-    }
 }
