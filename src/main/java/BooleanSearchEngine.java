@@ -14,7 +14,6 @@ public class BooleanSearchEngine implements SearchEngine {
 
     public BooleanSearchEngine(File pdfsDir, File file) throws IOException {
         stopWords = new StopWords(file);
-
         for (File pdf : Objects.requireNonNull(pdfsDir.listFiles())) {
             var doc = new PdfDocument(new PdfReader(pdf));
             int length = doc.getNumberOfPages();
@@ -55,8 +54,6 @@ public class BooleanSearchEngine implements SearchEngine {
     public List<PageEntry> search(String words) {
         var wordArray = words.split(" ");
         List<List<PageEntry>> listOfPageEntryLists = new ArrayList<>();
-        List<PageEntry> listForPageEntrySummed = new ArrayList<>();
-        List<PageEntry> removeList = new ArrayList<>();
 
         for (String word : wordArray) {
             if (stopWords.getStopWordsList().stream().noneMatch(n -> n.equalsIgnoreCase(word))) {
@@ -64,21 +61,23 @@ public class BooleanSearchEngine implements SearchEngine {
             }
         }
         List<PageEntry> bigList = listOfPageEntryLists.stream().flatMap(Collection::stream).collect(Collectors.toList());
-        for (PageEntry pageEntry1 : bigList) {
-            for (PageEntry pageEntry2 : bigList) {
-                if (pageEntry1 == pageEntry2) continue;
-                if (pageEntry1.compare(pageEntry2)) {
-                    removeList.add(pageEntry1);
-                    removeList.add(pageEntry2);
-                    listForPageEntrySummed.add(new PageEntry(pageEntry1.getPdfName(), pageEntry1.getPage(),
-                            (pageEntry1.getCount() + pageEntry2.getCount())));
-                }
+
+        Map<ClassForGrouping, Integer> dictionary = new HashMap<>();
+        ClassForGrouping classForGrouping;
+        for (PageEntry pageEntry : bigList) {
+            classForGrouping = new ClassForGrouping(pageEntry.getPdfName(), pageEntry.getPage());
+            if (dictionary.containsKey(classForGrouping)) {
+                var count = dictionary.get(classForGrouping);
+                var newCount = count + pageEntry.getCount();
+                dictionary.put(classForGrouping, newCount);
+            } else {
+                dictionary.put(classForGrouping, pageEntry.getCount());
             }
         }
-        bigList.removeAll(removeList);
-        var resultList = new ArrayList<>(bigList);
-        resultList.addAll(listForPageEntrySummed.stream().distinct().collect(Collectors.toList()));
-        return resultList.stream().sorted().collect(Collectors.toList());
+        List<PageEntry> resultList = new ArrayList<>();
+        dictionary.forEach((pdfPage, count) -> resultList.add(new PageEntry(pdfPage.getPdfName(), pdfPage.getPage(), count)));
+        Collections.sort(resultList);
+        return resultList;
     }
 
     public Map<String, List<PageEntry>> getSearchList() {
