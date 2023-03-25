@@ -23,6 +23,13 @@ public class StopWords {
         }
     }
 
+    public String contains(String word) {
+        if (this.stopWordsList.stream().noneMatch(n -> n.equalsIgnoreCase(word))) {
+            return word;
+        }
+        return null;
+    }
+
     public List<String> getStopWordsList() {
         return stopWordsList;
     }

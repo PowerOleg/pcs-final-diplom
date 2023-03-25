@@ -13,8 +13,6 @@ public class ClientApp {
         try (Socket clientSocket = new Socket("localhost", 8989);
              BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
              PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
-
-
             out.println("объяснить концепцию");
             String serverResponse2 = in.readLine();
             System.out.println(serverResponse2);

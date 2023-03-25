@@ -29,7 +29,7 @@ public class MainServer {
     public void serverService(Socket socket) {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
              BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()))) {
-            String clientRequest = in.readLine();
+            String clientRequest = in.readLine().toLowerCase();
             System.out.println("Запрос клиента: " + clientRequest);
             String response = serverLogic.makeResponse(clientRequest, booleanSearchEngine);
             out.write(response);

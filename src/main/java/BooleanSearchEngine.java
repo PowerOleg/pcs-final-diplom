@@ -54,14 +54,10 @@ public class BooleanSearchEngine implements SearchEngine {
     public List<PageEntry> search(String words) {
         var wordArray = words.split(" ");
         List<List<PageEntry>> listOfPageEntryLists = new ArrayList<>();
+        Arrays.stream(wordArray).forEach(word ->
+                listOfPageEntryLists.add(searchList.computeIfAbsent(stopWords.contains(word), m -> Collections.emptyList())));
 
-        for (String word : wordArray) {
-            if (stopWords.getStopWordsList().stream().noneMatch(n -> n.equalsIgnoreCase(word))) {
-                listOfPageEntryLists.add(searchList.computeIfAbsent(word, n -> null));
-            }
-        }
         List<PageEntry> bigList = listOfPageEntryLists.stream().flatMap(Collection::stream).collect(Collectors.toList());
-
         Map<ClassForGrouping, Integer> dictionary = new HashMap<>();
         ClassForGrouping classForGrouping;
         for (PageEntry pageEntry : bigList) {
